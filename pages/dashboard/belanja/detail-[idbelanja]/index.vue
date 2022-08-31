@@ -1,6 +1,5 @@
 <script>
 import _ from "lodash";
-
 export default {
   data() {
     return {
@@ -61,7 +60,6 @@ export default {
   },
   created() {},
   mounted() {
-    console.log(this.filter);
     this.getKelompok();
     this.$emit("judul", "Kegiatan / Sub Kegiatan Belanja");
   },
@@ -189,18 +187,11 @@ definePageMeta({
               >Pengelompokan Belanja</label
             >
             <div class="hstack gap-3">
-              <select
-                class="form-control"
-                ref="pilihKelBel"
-                id="choices-single-default"
-              >
-                <option value="0" disabled selected>-- Pilih --</option>
+              <Select2>
                 <option value="bobo" v-for="dt in dataKelompok">
                   {{ dt.uraian }}
                 </option>
-                <option value="Choice 2">Choice 2</option>
-                <option value="Choice 3">Choice 3</option>
-              </select>
+              </Select2>
               <div class="vr"></div>
               <button
                 type="button"
@@ -237,14 +228,12 @@ definePageMeta({
               />
             </div>
             <div class="mb-2">
-              <label for="formrow-firstname-input" class="form-label"
-                >Keterangan</label
+              <label for="formrow-kode-input" class="form-label"
+                >Rekening</label
               >
-              <textarea
-                class="form-control"
-                rows="4"
-                v-model="addKeterangan"
-              ></textarea>
+              <Select2>
+                <option value="bobo">1</option>
+              </Select2>
             </div>
           </form>
         </template>

@@ -7,7 +7,8 @@ async function apiKoneksi(url, options = null, mthd = "GET") {
     baseURL: useRuntimeConfig().public.apiBase,
   };
   let tkn = {};
-  if (getToken()) tkn = { headers: { Authorization: `Bearer ${getToken()}` } };
+  if (getToken())
+    tkn = { headers: { Authorization: `Bearer ${await getToken()}` } };
   // obj variabile could be empty or not, it's the same
   obj = { ...obj, ...tkn, ...options };
   const response = await $fetch.raw(`/api/v1${url}`, obj);

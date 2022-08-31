@@ -1,5 +1,4 @@
 <script>
-import { useOffsetPagination } from "@vueuse/core";
 export default {
   data() {
     return {

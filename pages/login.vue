@@ -88,7 +88,7 @@ export default {
   methods: {
     async userLogin() {
       notifikasi("loading", "Memproses Autentikasi...");
-      loginAplikasiAuth(this.login.username, this.login.password, this);
+      await loginAplikasiAuth(this.login.username, this.login.password, this);
     },
   },
   head: {

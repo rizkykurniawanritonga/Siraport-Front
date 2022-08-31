@@ -1,60 +1,65 @@
 import { _ } from "lodash";
-import { get, set } from "@vueuse/core";
+import localForage from "localforage";
 
-function deleteAllCookies() {
-  var cookies = document.cookie.split(";");
-
-  for (var i = 0; i < cookies.length; i++) {
-    var cookie = cookies[i];
-    var eqPos = cookie.indexOf("=");
-    var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  }
-}
-
-function storeData(mode, sts = null) {
+async function storeData(mode, sts = null) {
   // setItem, getItem, removeItem, clear
   // sts = key & val
   // 1. sts = {key: 'abc'}
   // 2. sts = {key: 'abc', val: 'def'}
+  localForage.config({
+    driver: localForage.INDEXEDDB, // Force WebSQL; same as using setDriver()
+    name: "Siraport-Apps",
+    version: 1.0,
+    storeName: "siraport_app", // Should be alphanumeric, with underscores.
+    description: "Database Browsernya Aplikasi Siraport",
+  });
   const dPrfx = "siraport-app";
   if (mode == "set") {
-    const setStr = useCookie(`${dPrfx}:${sts.key}`);
-    set(setStr, sts.val);
+    localForage.setItem(`${dPrfx}:${sts.key}`, sts.val);
   } else if (mode == "get") {
-    return get(useCookie(`${dPrfx}:${sts.key}`));
+    const dt = await localForage
+      .getItem(`${dPrfx}:${sts.key}`)
+      .then(function (value) {
+        // This code runs once the value has been loaded
+        // from the offline store.
+        return value;
+      })
+      .catch(function (err) {
+        // This code runs if there were any errors
+        console.log(err);
+      });
+    return dt;
   } else if (mode == "delete") {
-    set(useCookie(`${dPrfx}:${sts.key}`), null);
+    localForage.removeItem(`${dPrfx}:${sts.key}`);
   } else if (mode == "destroy") {
-    deleteAllCookies();
+    localForage.clear();
   } else if (mode == "flash") {
-    const getFl = useCookie(`${dPrfx}:${sts.key}`);
-    const sstr = get(getFl);
-    set(getFl, null);
-    return sstr;
+    const dt = await localForage.getItem(`${dPrfx}:${sts.key}`);
+    localForage.removeItem(`${dPrfx}:${sts.key}`);
+    return dt;
   }
 }
 
 function setUser(dt) {
   storeData("set", { key: "users", val: dt });
 }
-function getUser(key) {
-  const dt = storeData("get", { key: "users" });
-  return dt[key];
+async function getUser(key = null) {
+  const dt = await storeData("get", { key: "users" });
+  return key ? dt[key] : dt;
 }
 
 function setToken(vls) {
   storeData("set", { key: "loginToken", val: vls });
 }
-function getToken() {
-  return storeData("get", { key: "loginToken" });
+async function getToken() {
+  return await storeData("get", { key: "loginToken" });
 }
 
 function setTahun(vls) {
   storeData("set", { key: "pilihTahun", val: vls });
 }
-function getTahun() {
-  return storeData("get", { key: "pilihTahun" });
+async function getTahun() {
+  return await storeData("get", { key: "pilihTahun" });
 }
 
 export { storeData, setUser, getUser, setToken, getToken, setTahun, getTahun };

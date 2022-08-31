@@ -1,6 +1,13 @@
 <script>
 import _ from "lodash";
 export default {
+  async setup() {
+    const filter = _.split(
+      await storeData("get", { key: useRoute().query.k }),
+      "|"
+    );
+    return { filter };
+  },
   data() {
     return {
       adduraian: "",
@@ -12,7 +19,6 @@ export default {
       data: null,
       dataFocus: null,
       titleModalDelte: "loading...",
-      filter: _.split(storeData("get", { key: useRoute().query.k }), "|"),
     };
   },
   watch: {

@@ -1,3 +1,33 @@
+<script>
+import { useWindowScroll } from "@vueuse/core";
+export default {
+  async setup() {
+    const { x, y } = useWindowScroll();
+    let user = {};
+    user = {
+      nama: "",
+      username: "",
+    };
+    user = await getUser();
+    const tahunKerja = await getTahun();
+    return { y, user, tahunKerja };
+  },
+  props: {
+    sidebar: Boolean,
+    judul: String,
+  },
+  methods: {
+    pickTahunKerja() {
+      storeData("set", { key: "pickYearBack", val: useRoute().path });
+      navigateTo("/pilihtahun");
+    },
+    toggleSidebar() {
+      this.$emit("togglesidebar");
+    },
+  },
+  mounted() {},
+};
+</script>
 <template>
   <header
     id="page-topbar"
@@ -62,7 +92,7 @@
           @click="pickTahunKerja"
         >
           <i class="bx bx-calendar-event icon-sm align-middle"></i>
-          <span class="align-middle ml-2 font-semibold">{{ getTahun() }}</span>
+          <span class="align-middle ml-2 font-semibold">{{ tahunKerja }}</span>
         </button>
         <Dropdown
           btnclass="header-item noti-icon"
@@ -179,14 +209,14 @@
             />
             <span
               class="d-none d-xl-inline-block ms-2 fw-medium font-size-15"
-              >{{ getUser("nama") }}</span
+              >{{ user.nama }}</span
             >
           </template>
           <template #dropcontent>
             <div class="p-3 border-bottom">
-              <h6 class="mb-0">{{ getUser("nama") }}</h6>
+              <h6 class="mb-0">{{ user.nama }}</h6>
               <p class="mb-0 font-size-11 text-muted">
-                {{ getUser("username") }}
+                {{ user.username }}
               </p>
             </div>
             <nuxt-link class="dropdown-item" to="/dashboard/profile"
@@ -208,26 +238,3 @@
     </div>
   </header>
 </template>
-<script>
-import { useWindowScroll } from "@vueuse/core";
-export default {
-  setup() {
-    const { x, y } = useWindowScroll();
-    return { y };
-  },
-  props: {
-    sidebar: Boolean,
-    judul: String,
-  },
-  methods: {
-    pickTahunKerja() {
-      storeData("set", { key: "pickYearBack", val: useRoute().path });
-      navigateTo("/pilihtahun");
-    },
-    toggleSidebar() {
-      this.$emit("togglesidebar");
-    },
-  },
-  mounted() {},
-};
-</script>
