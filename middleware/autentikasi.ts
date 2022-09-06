@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  const tkn = await getToken();
-  setTimeout(async () => {
+  if (process.client) {
+    const tkn = await getToken();
     if (!tkn) {
       await flashNotifikasi(
         "set",
@@ -9,5 +9,5 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       );
       return navigateTo("/login");
     }
-  }, 1000);
+  }
 });

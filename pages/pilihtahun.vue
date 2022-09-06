@@ -17,6 +17,10 @@
 </template>
 <script>
 export default {
+  async setup() {
+    const yearBack = await storeData("get", { key: "pickYearBack" });
+    return { yearBack };
+  },
   data() {
     return {
       tahun: [2020, 2021, 2022, 2023],
@@ -26,10 +30,10 @@ export default {
     title: "Pilih Tahun Anggaran",
   },
   methods: {
-    pilih(val) {
+    async pilih(val) {
       setTahun(val);
       notifikasi("info", "Memilih Tahun Anggaran " + val);
-      navigateTo("/dashboard");
+      navigateTo(this.yearBack || "/dashboard");
     },
   },
   mounted() {

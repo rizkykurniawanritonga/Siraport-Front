@@ -2,15 +2,10 @@
 import { useWindowScroll } from "@vueuse/core";
 export default {
   async setup() {
-    const { x, y } = useWindowScroll();
-    let user = {};
-    user = {
-      nama: "",
-      username: "",
-    };
-    user = await getUser();
+    const { x, y: yScreen } = useWindowScroll();
     const tahunKerja = await getTahun();
-    return { y, user, tahunKerja };
+    const user = await getUser();
+    return { yScreen, user, tahunKerja };
   },
   props: {
     sidebar: Boolean,
@@ -18,7 +13,7 @@ export default {
   },
   methods: {
     pickTahunKerja() {
-      storeData("set", { key: "pickYearBack", val: useRoute().path });
+      storeData("set", { key: "pickYearBack", val: useRoute().fullPath });
       navigateTo("/pilihtahun");
     },
     toggleSidebar() {
@@ -32,7 +27,7 @@ export default {
   <header
     id="page-topbar"
     class="isvertical-topbar !bg-slate-50/50 backdrop-blur backdrop-grayscale !z-20"
-    :class="y > 2 && 'border-b border-gray-300 shadow-lg'"
+    :class="yScreen > 2 && 'border-b border-gray-300 shadow-lg'"
   >
     <div class="navbar-header">
       <div class="flex content-center">
@@ -68,14 +63,7 @@ export default {
         <!-- start page title -->
         <div class="page-title-box align-self-center d-none d-md-block">
           <!-- shimmer -->
-          <h4
-            class="page-title mb-0"
-            :class="
-              !judul
-                ? 'motion-safe:animate-pulse duration-75 rounded-full bg-slate-200 h-7 w-28'
-                : ''
-            "
-          >
+          <h4 class="page-title mb-0">
             {{ judul }}
           </h4>
         </div>
@@ -209,14 +197,14 @@ export default {
             />
             <span
               class="d-none d-xl-inline-block ms-2 fw-medium font-size-15"
-              >{{ user.nama }}</span
+              >{{ user && user.nama }}</span
             >
           </template>
           <template #dropcontent>
             <div class="p-3 border-bottom">
-              <h6 class="mb-0">{{ user.nama }}</h6>
+              <h6 class="mb-0">{{ user && user.nama }}</h6>
               <p class="mb-0 font-size-11 text-muted">
-                {{ user.username }}
+                {{ user && user.username }}
               </p>
             </div>
             <nuxt-link class="dropdown-item" to="/dashboard/profile"

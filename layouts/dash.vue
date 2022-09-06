@@ -23,14 +23,15 @@ definePageMeta({
 import { useWindowSize, useToggle } from "@vueuse/core";
 export default {
   async setup() {
-    const { width, height } = useWindowSize();
-    const [stateSdbr, toggleState] = useToggle();
-    const widthlyr = width;
+    const [{ width: widthlyr }, [stateSdbr, toggleState]] = await Promise.all([
+      useWindowSize(),
+      useToggle(),
+    ]);
     return { widthlyr, stateSdbr, toggleState };
   },
   data() {
     return {
-      judulatas: null,
+      judulatas: "",
       sdbrSize: "sm",
       fcsbck: focusBack(),
     };

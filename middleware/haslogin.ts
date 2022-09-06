@@ -1,9 +1,9 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  const tkn = await getToken();
-  setTimeout(async () => {
+  if (process.client) {
+    const tkn = await getToken();
     if (tkn) {
       await flashNotifikasi("set", "info", "Anda sudah login!");
       return navigateTo("/pilihtahun");
     }
-  }, 1000);
+  }
 });

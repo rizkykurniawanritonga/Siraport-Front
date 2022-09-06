@@ -30,10 +30,7 @@ async function loginAplikasiAuth(user, pass, e) {
 }
 
 function logoutAplikasi() {
-  notifikasi("info", "Logout...");
-  storeData("destroy");
-  location.reload();
-  // navigateTo("/login");
+  navigateTo("/auth/logout", { replace: true });
 }
 
 export { loginAplikasiAuth, logoutAplikasi };

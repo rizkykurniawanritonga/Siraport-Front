@@ -1,6 +1,16 @@
 <script>
 import _ from "lodash";
 export default {
+  async setup() {
+    const filter = await storeData("get", {
+      key: "detail-" + useRoute().params.idbelanja,
+    });
+    const [{ data: dataSatuan }] = await Promise.all([
+      apiKoneksi("/satuan/getSatuan"),
+    ]);
+    const [{ data: dataRekening }] = await Promise.all([apiKoneksi("/akun")]);
+    return { dataSatuan, dataRekening, filter };
+  },
   data() {
     return {
       caridata: "",
@@ -11,19 +21,34 @@ export default {
       loadingbtn: false,
       datatabelrecvry: {},
       dataKelompok: {},
+      selectKelompok: 0,
+      rekaddKelompok: "",
+      namaBarang: "",
+      spekBarang: "",
+      koefisienBarang: "",
+      satuanBarang: "0",
+      hargaBarang: "",
+      modeBelanja: "add",
       addnamaKelompok: "",
       addKeterangan: "",
       hdrtbl: ["Uraian", "Satuan", "Koefisien", "Harga", "Total", "Action"],
-      filter: storeData("get", {
-        key: "detail-" + useRoute().params.idbelanja,
-      }),
     };
   },
   methods: {
     resetfield() {
+      this.selectKelompok = 0;
+      this.namaBarang = "";
+      this.spekBarang = "";
+      this.koefisienBarang = "";
+      this.satuanBarang = "0";
+      this.hargaBarang = "";
+      this.modeBelanja = "add";
       this.addnamaKelompok = "";
       this.addKeterangan = "";
+      this.rekaddKelompok = "";
       this.getKelompok();
+      this.getRekening();
+      this.loadingbtn = false;
     },
     async getKelompok() {
       const Audt = await apiKoneksi(`/belanja/getBelanja/${this.filter}`);
@@ -42,7 +67,7 @@ export default {
         {
           body: {
             id_kegiatan_sub_uraian: this.filter,
-            kode_rek: "0",
+            id_akun: this.rekaddKelompok,
             uraian: this.addnamaKelompok,
           },
         },
@@ -53,14 +78,81 @@ export default {
         this.resetfield();
         this.showModal = false;
         notifikasi(rsp.result, rsp.title);
+        this.selectKelompok = rsp.data.id;
       } else {
         console.log(efs);
+      }
+    },
+    async simpanBelanja() {
+      this.loadingbtn = true;
+      const efs1 = await apiKoneksi(
+        "/belanja/addBelanjaSpek",
+        {
+          body: {
+            id_belanja: this.selectKelompok,
+            uraian: this.namaBarang,
+            satuan: this.satuanBarang,
+            koefisien: this.koefisienBarang,
+            harga: this.hargaBarang,
+            total: this.hargaBarang * this.koefisienBarang,
+          },
+        },
+        "POST"
+      );
+      if (efs1.result == "success") {
+        const rsp1 = efs1;
+        const efs2 = await apiKoneksi(
+          "/belanja/addBelanjaSpekDetail",
+          {
+            body: {
+              id_belanja_spek: rsp1.data.id,
+              uraian: this.namaBarang,
+              spek: this.spekBarang,
+            },
+          },
+          "POST"
+        );
+        if (efs2.result == "success") {
+          const rsp2 = efs2;
+          const efs3 = await apiKoneksi(
+            "/belanja/addNilaiBelanja",
+            {
+              body: {
+                id_belanja_spek_detail: rsp2.data.id,
+                koefisien_before: this.koefisienBarang,
+                satuan_before: this.satuanBarang,
+                harga_before: this.hargaBarang,
+                ppn_before: 0,
+                jumlah_before: this.hargaBarang * this.satuanBarang,
+                koefisien_after: "",
+                satuan_after: "",
+                harga_after: 0,
+                ppn_after: 0,
+                jumlah_after: 0,
+              },
+            },
+            "POST"
+          );
+          if (efs3.result == "success") {
+            const rsp3 = efs3;
+            this.resetfield();
+            this.sidepnl = false;
+            notifikasi(rsp3.result, rsp3.title);
+          } else {
+            console.log(efs3);
+          }
+        } else {
+          console.log(efs2);
+        }
+      } else {
+        console.log(efs1);
       }
     },
   },
   created() {},
   mounted() {
-    this.getKelompok();
+    this.resetfield();
+    console.log(this.filter);
     this.$emit("judul", "Kegiatan / Sub Kegiatan Belanja");
   },
   head: {
@@ -125,7 +217,7 @@ definePageMeta({
               <div class="col-sm-9">
                 <input
                   type="search"
-                  class="form-control"
+                  class="form-control mb-0"
                   placeholder="Kata kunci pencarian..."
                   id="horizontal-firstname-input"
                   v-model="caridata"
@@ -182,29 +274,182 @@ definePageMeta({
           <span>FORM KEGIATAN / SUB KEGIATAN</span>
         </template>
         <template #content>
-          <div class="mb-3">
+          <div class="mb-4">
             <label class="form-label" for="formrow-firstname-input"
               >Pengelompokan Belanja</label
             >
             <div class="hstack gap-3">
-              <Select2>
-                <option value="bobo" v-for="dt in dataKelompok">
+              <select class="form-control" v-model="selectKelompok">
+                <option :value="dt.id" v-for="dt in dataKelompok">
                   {{ dt.uraian }}
                 </option>
-              </Select2>
+              </select>
               <div class="vr"></div>
               <button
                 type="button"
                 class="btn btn-success"
                 @click="showModal = true"
               >
-                <i class="bx bx-plus align-middle text-lg"></i>
+                <i class="bx bx-plus align-middle"></i>
               </button>
             </div>
           </div>
-          <p>
-            Try scrolling the rest of the page to see this option in action.
+          <div
+            class="-mx-3 pt-4 pb-3 px-3 bg-gray-100 border-t border-gray-300"
+          >
+            <label class="form-label" for="formrow-firstname-input"
+              >Nama Barang / Kegiatan</label
+            >
+            <div class="hstack -mx-1 gap-3">
+              <input type="text" class="form-control" v-model="namaBarang" />
+              <div class="vr"></div>
+              <button
+                type="button"
+                class="btn btn-success"
+                @click="showModal = true"
+              >
+                <i class="bx bx-search align-middle"></i>
+              </button>
+            </div>
+          </div>
+          <div class="row mb-3 bg-gray-100 border-b border-gray-300">
+            <div class="col-12 mb-3">
+              <label class="form-label" for="inputspekbarang"
+                >Spesifikasi Barang</label
+              >
+              <textarea
+                class="form-control"
+                id="inputspekbarang"
+                rows="4"
+                placeholder="Rincikan detail spesifikasi barang"
+                v-model="spekBarang"
+              ></textarea>
+            </div>
+            <div class="col">
+              <label class="form-label" for="inputkoebel">Koefisien</label>
+              <input
+                type="number"
+                class="form-control"
+                id="inputkoebel"
+                v-model="koefisienBarang"
+              />
+            </div>
+            <div class="col">
+              <label class="form-label" for="inputhargasatuan">Harga</label>
+              <input
+                type="number"
+                class="form-control"
+                id="inputhargasatuan"
+                v-model="hargaBarang"
+              />
+            </div>
+            <div class="col">
+              <label class="form-label" for="inputsatuans">Satuan</label>
+              <select
+                class="form-control"
+                id="inputsatuans"
+                v-model="satuanBarang"
+              >
+                <option value="0" disabled>- PILIH SATUAN -</option>
+                <option :value="dt.id" v-for="dt in dataSatuan">
+                  {{ dt.nama_satuan }}
+                </option>
+              </select>
+            </div>
+            <div class="col-12 mt-2 mb-4">
+              <input
+                type="text"
+                class="form-control text-center !font-bold !text-lg"
+                readonly
+                id="inputhargasatuan"
+                :value="
+                  `Total Harga: Rp. ` +
+                  formatPrice(hargaBarang * koefisienBarang)
+                "
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label class="form-label" for="inputhargasatuan">Harga</label>
+              <input
+                type="number"
+                class="form-control mb-2"
+                id="inputhargasatuan"
+              />
+              <input
+                type="number"
+                class="form-control mb-2"
+                id="inputhargasatuan"
+              />
+              <input
+                type="number"
+                class="form-control mb-2"
+                id="inputhargasatuan"
+              />
+              <input
+                type="number"
+                class="form-control mb-2"
+                id="inputhargasatuan"
+              />
+              <input
+                type="number"
+                class="form-control mb-2"
+                id="inputhargasatuan"
+              />
+            </div>
+            <div class="col">
+              <label class="form-label" for="inputsatuans">Satuan</label>
+              <select class="form-control mb-2" id="inputsatuans">
+                <option value="0" disabled>- PILIH SATUAN -</option>
+                <option :value="dt.id" v-for="dt in dataSatuan">
+                  {{ dt.nama_satuan }}
+                </option>
+              </select>
+              <select class="form-control mb-2" id="inputsatuans">
+                <option value="0" disabled>- PILIH SATUAN -</option>
+                <option :value="dt.id" v-for="dt in dataSatuan">
+                  {{ dt.nama_satuan }}
+                </option>
+              </select>
+              <select class="form-control mb-2" id="inputsatuans">
+                <option value="0" disabled>- PILIH SATUAN -</option>
+                <option :value="dt.id" v-for="dt in dataSatuan">
+                  {{ dt.nama_satuan }}
+                </option>
+              </select>
+              <select class="form-control mb-2" id="inputsatuans">
+                <option value="0" disabled>- PILIH SATUAN -</option>
+                <option :value="dt.id" v-for="dt in dataSatuan">
+                  {{ dt.nama_satuan }}
+                </option>
+              </select>
+              <select class="form-control mb-2" id="inputsatuans">
+                <option value="0" disabled>- PILIH SATUAN -</option>
+                <option :value="dt.id" v-for="dt in dataSatuan">
+                  {{ dt.nama_satuan }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <p class="pt-3 text-gray-400">
+            Sebelum menyimpan cek data terlebih dahulu dengan baik.
           </p>
+          <button
+            type="submit"
+            class="btn btn-success w-md"
+            :class="loadingbtn ? 'btn-soft-success' : 'btn-success'"
+            @click.prevent="simpanBelanja"
+          >
+            <span
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+              v-show="loadingbtn"
+            ></span>
+            <span v-show="!loadingbtn">Simpan</span>
+          </button>
         </template>
       </Sidepanel>
       <Modal :show="showModal" @tutup="showModal = false">
@@ -217,23 +462,27 @@ definePageMeta({
           </h3>
           <form>
             <div class="mb-4">
-              <label for="formrow-kode-input" class="form-label"
+              <label for="inputnamakelbel" class="form-label"
                 >Nama Kelompok Belanja</label
               >
               <input
                 type="text"
                 class="form-control"
                 v-model="addnamaKelompok"
-                id="formrow-kode-input"
+                id="inputnamakelbel"
               />
             </div>
             <div class="mb-2">
-              <label for="formrow-kode-input" class="form-label"
-                >Rekening</label
+              <label for="inputrekaddkel" class="form-label">Rekening</label>
+              <select
+                class="form-control"
+                id="inputrekaddkel"
+                v-model="rekaddKelompok"
               >
-              <Select2>
-                <option value="bobo">1</option>
-              </Select2>
+                <option :value="dt.id" v-for="dt in dataRekening">
+                  {{ dt.no_rekening }}. {{ dt.nama_rekening }}
+                </option>
+              </select>
             </div>
           </form>
         </template>

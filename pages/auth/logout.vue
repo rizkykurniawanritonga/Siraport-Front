@@ -1,9 +1,9 @@
 <template>
-  <p>reset data...</p>
+  <p>logout...</p>
 </template>
 <script>
 export default {
-  mounted() {
+  created() {
     storeData("destroy");
     navigateTo("/login", { replace: true });
   },

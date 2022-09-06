@@ -10,23 +10,26 @@
   <Script
     src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"
   />
-  <select class="!mb-0" ref="seltek" name="state">
+  <select class="!mb-0" ref="seltek" name="state" v-model="pilih">
     <slot />
   </select>
 </template>
 <script>
 export default {
   data() {
-    return {};
+    return {
+      pilih: "",
+    };
   },
-  props: {
-    show: Boolean,
+  watch: {
+    pilih(vl) {
+      console.log(vl);
+    },
   },
-  watch: {},
   mounted() {
     setTimeout(() => {
       new Choices(this.$refs.seltek);
-    }, 1000);
+    }, 500);
   },
 };
 </script>

@@ -4,6 +4,11 @@ import { v4 as uuidv4 } from "uuid";
 import { useDocumentVisibility } from "@vueuse/core";
 import { useWebNotification } from "@vueuse/core";
 
+function formatPrice(value) {
+  let val = (value / 1).toFixed(2).replace(".", ",");
+  return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 function notifikasi(type, txt) {
   const cgo = {
     position: "bottom-center",
@@ -26,12 +31,9 @@ async function flashNotifikasi(mode = "init", tipe = null, teks = null) {
   if (mode == "init" && ck) {
     const tks = await storeData("flash", { key: "notif" })
       .then(function (value) {
-        // This code runs once the value has been loaded
-        // from the offline store.
         return value;
       })
       .catch(function (err) {
-        // This code runs if there were any errors
         console.log(err);
       });
     notifikasi(tks["type"], tks["text"]);
@@ -52,4 +54,11 @@ function focusBack() {
   return useDocumentVisibility();
 }
 
-export { focusBack, idunq, notifikasi, nativeNotifikasi, flashNotifikasi };
+export {
+  focusBack,
+  formatPrice,
+  idunq,
+  notifikasi,
+  nativeNotifikasi,
+  flashNotifikasi,
+};

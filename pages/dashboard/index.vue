@@ -6,9 +6,6 @@ export default {
   mounted() {
     this.$emit("judul", "Hi, Welcome Back!");
   },
-  beforeUnmount() {
-    this.$emit("judul", "loading...");
-  },
   head: {
     title: "Dashboard",
   },

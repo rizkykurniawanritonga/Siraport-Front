@@ -1,8 +1,9 @@
 <script>
 import { useTimeAgo } from "@vueuse/core";
 export default {
-  data() {
-    return {};
+  async setup() {
+    const user = await getUser();
+    return { user };
   },
   mounted() {
     this.$emit("judul", "Profil");
@@ -26,31 +27,7 @@ definePageMeta({
           style="height: 120px"
           alt=""
         />
-        <div class="overlay-content rounded-top">
-          <div>
-            <div class="user-nav p-3">
-              <div class="d-flex justify-content-end">
-                <div class="dropdown">
-                  <a
-                    class="text-muted dropdown-toggle font-size-16"
-                    href="#"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    <i class="bx bx-dots-vertical text-white font-size-20"></i>
-                  </a>
-                  <div class="dropdown-menu dropdown-menu-end" style="">
-                    <a class="dropdown-item" href="#">Edit</a>
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Remove</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div class="overlay-content rounded-top"></div>
       </div>
       <!-- end user-profile-img -->
 
@@ -63,7 +40,7 @@ definePageMeta({
           />
 
           <div class="mt-3">
-            <h5 class="mb-1">{{ getUser("nama") }}</h5>
+            <h5 class="mb-1">{{ user && user.nama }}</h5>
           </div>
         </div>
 
@@ -74,16 +51,18 @@ definePageMeta({
             <tbody>
               <tr>
                 <th class="fw-bold">Nama Lengkap :</th>
-                <td class="text-muted">{{ getUser("nama") }}</td>
+                <td class="text-muted">{{ user && user.nama }}</td>
               </tr>
               <tr>
                 <th class="fw-bold">Username :</th>
-                <td class="text-muted font-bold">@{{ getUser("username") }}</td>
+                <td class="text-muted font-bold">
+                  @{{ user && user.username }}
+                </td>
               </tr>
               <tr>
                 <th class="fw-bold">Akun dibuat :</th>
                 <td class="text-muted">
-                  {{ useTimeAgo(getUser("created_at")).value }}
+                  {{ useTimeAgo(user && user.created_at).value }}
                 </td>
               </tr>
             </tbody>

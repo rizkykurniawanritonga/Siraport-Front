@@ -6,37 +6,40 @@ async function storeData(mode, sts = null) {
   // sts = key & val
   // 1. sts = {key: 'abc'}
   // 2. sts = {key: 'abc', val: 'def'}
-  localForage.config({
-    driver: localForage.INDEXEDDB, // Force WebSQL; same as using setDriver()
-    name: "Siraport-Apps",
-    version: 1.0,
-    storeName: "siraport_app", // Should be alphanumeric, with underscores.
-    description: "Database Browsernya Aplikasi Siraport",
-  });
-  const dPrfx = "siraport-app";
-  if (mode == "set") {
-    localForage.setItem(`${dPrfx}:${sts.key}`, sts.val);
-  } else if (mode == "get") {
-    const dt = await localForage
-      .getItem(`${dPrfx}:${sts.key}`)
-      .then(function (value) {
-        // This code runs once the value has been loaded
-        // from the offline store.
-        return value;
-      })
-      .catch(function (err) {
-        // This code runs if there were any errors
-        console.log(err);
-      });
-    return dt;
-  } else if (mode == "delete") {
-    localForage.removeItem(`${dPrfx}:${sts.key}`);
-  } else if (mode == "destroy") {
-    localForage.clear();
-  } else if (mode == "flash") {
-    const dt = await localForage.getItem(`${dPrfx}:${sts.key}`);
-    localForage.removeItem(`${dPrfx}:${sts.key}`);
-    return dt;
+  try {
+    localForage.config({
+      name: "Siraport-Apps",
+      version: 1.0,
+      storeName: "siraport_app", // Should be alphanumeric, with underscores.
+      description: "Databasenya Aplikasi Siraport",
+    });
+    const dPrfx = "siraport-app";
+    if (mode == "set") {
+      localForage.setItem(`${dPrfx}:${sts.key}`, sts.val);
+    } else if (mode == "get") {
+      const dt = await localForage
+        .getItem(`${dPrfx}:${sts.key}`)
+        .then(function (value) {
+          // This code runs once the value has been loaded
+          // from the offline store.
+          return value;
+        })
+        .catch(function (err) {
+          // This code runs if there were any errors
+          console.log(err);
+        });
+      return dt;
+    } else if (mode == "delete") {
+      localForage.removeItem(`${dPrfx}:${sts.key}`);
+    } else if (mode == "destroy") {
+      localForage.clear();
+    } else if (mode == "flash") {
+      const dt = await localForage.getItem(`${dPrfx}:${sts.key}`);
+      localForage.removeItem(`${dPrfx}:${sts.key}`);
+      return dt;
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 
