@@ -38,4 +38,17 @@ export default defineNuxtConfig({
       mode: process.env.NODE_ENV,
     },
   },
+  nitro: {
+    storage: {
+      redis: {
+        driver: "redis",
+        /* redis connector options */
+        port: 6379, // Redis port
+        host: "127.0.0.1", // Redis host
+        username: "", // needs Redis >= 6
+        password: "",
+        db: 5, // Defaults to 0
+      },
+    },
+  },
 });

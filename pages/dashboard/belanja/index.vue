@@ -40,7 +40,8 @@ export default {
     nextPage(val) {
       const route = useRoute();
       const uid = idunq();
-      storeData("set", { key: "detail-" + uid, val: val });
+      const cks = useCookie(uid);
+      cks.value = val;
       navigateTo({
         path: `${route.path}/detail-${uid}`,
       });

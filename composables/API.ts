@@ -11,7 +11,7 @@ async function apiKoneksi(url, options = null, mthd = "GET", mode = "mod") {
   // obj variabile could be empty or not, it's the same
   obj = { ...obj, ...tkn, ...options };
   if (mode == "native") {
-    return await useFetch(() => `/api/v1${url}`, obj);
+    return useFetch(() => `/api/v1${url}`, obj);
   } else {
     const response = await $fetch.raw(`/api/v1${url}`, obj);
     return response._data;

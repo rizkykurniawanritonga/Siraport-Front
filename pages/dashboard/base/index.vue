@@ -1,5 +1,12 @@
 <script>
+import _ from "lodash";
 export default {
+  async setup() {
+    const [{ data: data, refresh: getData, pending }] = await Promise.all([
+      useFetch(`/api/struktur/read?chain=base-urusan`),
+    ]);
+    return { data, getData, pending };
+  },
   data() {
     return {
       adduraian: "",
@@ -8,9 +15,7 @@ export default {
       showModaldelete: false,
       modalMode: "add",
       loadingbtn: false,
-      data: null,
       dataFocus: null,
-      titleModalDelte: "loading...",
     };
   },
   watch: {
@@ -21,128 +26,108 @@ export default {
     },
   },
   created() {
-    this.getData();
+    this.$emit("judul", "Data Urusan");
+    this.resetfield();
   },
   methods: {
     resetfield() {
       this.showModal = false;
       this.showModaldelete = false;
       this.getData();
-      setTimeout(() => {
-        this.adduraian = "";
-        this.addkoderekening = "";
-        this.modalMode = "add";
-        this.dataFocus = null;
-        this.loadingbtn = false;
-      }, 1000);
+      this.adduraian = "";
+      this.addkoderekening = "";
+      this.modalMode = "add";
+      this.dataFocus = null;
+      this.loadingbtn = false;
     },
-    async getData() {
-      const Audt = await apiKoneksi("/base/urusan");
-      if (Audt.result == "success") {
-        this.$emit("judul", "Data Urusan");
-        const rsp = Audt;
-        this.data = rsp.data.reverse();
-        // notifikasi(Audt.result, Audt.title);
-      } else {
-        console.log(Audt);
-      }
+    editDialog(val) {
+      const usrGt = _.find(this.data.data, ["id", val]);
+      this.dataFocus = val;
+      this.adduraian = usrGt.uraian;
+      this.addkoderekening = usrGt.kode_rek;
+      this.modalMode = "edit";
+      this.showModal = true;
     },
-    async editDialog(val) {
-      const eftch = await apiKoneksi(`/base/urusan/${val}`);
-      if (eftch.result == "success") {
-        // notifikasi(eftch.result, eftch.title);
-        const rsp = eftch;
-        this.dataFocus = val;
-        this.adduraian = rsp.data.uraian;
-        this.addkoderekening = rsp.data.kode_rek;
-        this.modalMode = "edit";
-        this.showModal = true;
-      } else {
-        console.log(Audt);
-      }
-    },
-    async hapusDialog(val) {
-      const eftch = await apiKoneksi(`/base/urusan/${val}`);
-      if (eftch.result == "success") {
-        const rsp = eftch;
-        this.dataFocus = val;
-        this.titleModalDelte = rsp.data.uraian;
-        this.showModaldelete = true;
-      } else {
-        console.log(Audt);
-      }
+    hapusDialog(val) {
+      const usrGt = _.find(this.data.data, ["id", val]);
+      this.dataFocus = val;
+      this.showModaldelete = true;
     },
     async simpanUrusan() {
       this.loadingbtn = true;
-      const efs = await apiKoneksi(
-        "/base/addUrusan",
-        {
-          body: {
-            kode_rek: this.addkoderekening,
-            uraian: this.adduraian,
-          },
+      $fetch("/api/struktur/add?chain=base-addUrusan", {
+        method: "post",
+        body: {
+          kode_rek: this.addkoderekening,
+          uraian: this.adduraian,
         },
-        "POST"
-      );
-      if (efs.result == "success") {
-        const rsp = efs;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(efs);
-      }
+      }).then((svSt) => {
+        if (svSt.result == "success") {
+          const rsp = svSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(svSt);
+        }
+      });
     },
     async updateUrusan() {
       this.loadingbtn = true;
-      const efu = await apiKoneksi(
-        `/base/updateUrusan/${this.dataFocus}`,
+      $fetch(
+        `/api/struktur/update?chain=base-updateUrusan&id=${this.dataFocus}`,
         {
+          method: "PUT",
           body: {
             kode_rek: this.addkoderekening,
             uraian: this.adduraian,
           },
-        },
-        "PUT"
-      );
-      if (efu.result == "success") {
-        const rsp = efu;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(efu);
-      }
+        }
+      ).then((upSt) => {
+        if (upSt.result == "success") {
+          const rsp = upSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(upSt);
+        }
+      });
     },
     async hapusUrusan() {
       this.loadingbtn = true;
-      const efh = await apiKoneksi(
-        `/base/deleteUrusan/${this.dataFocus}`,
-        {},
-        "PUT"
-      );
-      if (efh.result == "success") {
-        const rsp = efh;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(Audt);
-      }
+      $fetch(
+        `/api/struktur/delete?chain=base-deleteUrusan&id=${this.dataFocus}`,
+        {
+          method: "PUT",
+        }
+      ).then((delSt) => {
+        if (delSt.result == "success") {
+          const rsp = delSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(delSt);
+        }
+      });
     },
     nextPage(pg, val) {
       const route = useRoute();
       const uid = idunq();
-      storeData("set", { key: uid, val: val });
-      navigateTo({
-        path: `${route.path}/${pg}`,
-        query: {
-          k: uid,
+      const cks = useCookie(uid);
+      cks.value = val;
+      navigateTo(
+        {
+          path: `${route.path}/${pg}`,
+          query: {
+            k: uid,
+          },
         },
-      });
+        { replace: true }
+      );
     },
   },
-  mounted() {},
   head: {
     title: "Urusan",
   },
@@ -197,7 +182,10 @@ definePageMeta({
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="dt in data" v-if="data && data.length > 0">
+                  <tr
+                    v-for="dt in data.data.slice().reverse()"
+                    v-if="data.data && data.data.length > 0"
+                  >
                     <td class="fit">{{ dt.kode_rek }}</td>
                     <td>{{ dt.uraian }}</td>
                     <td class="flex gap-2 justify-center">
@@ -227,9 +215,20 @@ definePageMeta({
                       </button>
                     </td>
                   </tr>
+                  <tr v-else-if="pending">
+                    <td class="lead py-5 text-muted text-center" colspan="3">
+                      <div
+                        class="spinner-border text-secondary m-1 align-middle spinner-border-sm"
+                        role="status"
+                      >
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                      Loading...
+                    </td>
+                  </tr>
                   <tr v-else>
                     <td class="lead py-5 text-muted text-center" colspan="3">
-                      Tidak ada Data
+                      Tidak ada data
                     </td>
                   </tr>
                 </tbody>
@@ -332,9 +331,7 @@ definePageMeta({
                   </h3>
                   <div class="mt-2">
                     <p class="text-sm text-gray-500">
-                      <span class="block mb-2"
-                        >Anda yakin ingin menghapus data ini?</span
-                      >{{ titleModalDelte }}
+                      Anda yakin ingin menghapus data ini?
                     </p>
                   </div>
                 </div>

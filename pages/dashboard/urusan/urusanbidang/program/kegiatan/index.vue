@@ -2,11 +2,11 @@
 import _ from "lodash";
 export default {
   async setup() {
-    const filter = _.split(
-      await storeData("get", { key: useRoute().query.k }),
-      "|"
-    );
-    return { filter };
+    const filter = _.split(useCookie(useRoute().query.k).value, "|");
+    const [{ data: data, refresh: getData, pending }] = await Promise.all([
+      useFetch(`/api/struktur/read?chain=anggaran-kegiatan&id=${filter[1]}`),
+    ]);
+    return { data, getData, pending, filter };
   },
   data() {
     return {
@@ -16,7 +16,6 @@ export default {
       showModaldelete: false,
       modalMode: "add",
       loadingbtn: false,
-      data: null,
       dataFocus: null,
       titleModalDelte: "loading...",
     };
@@ -26,33 +25,20 @@ export default {
       !val && this.resetfield();
     },
   },
-  created() {
-    this.getData();
+  mounted() {
+    this.$emit("judul", "Kegiatan");
+    console.log(this.data);
   },
   methods: {
     resetfield() {
       this.showModal = false;
       this.showModaldelete = false;
       this.getData();
-      setTimeout(() => {
-        this.adduraian = "";
-        this.addkoderekening = "";
-        this.modalMode = "add";
-        this.dataFocus = null;
-        this.loadingbtn = false;
-      }, 1000);
-    },
-    async getData() {
-      const f = this.filter[1];
-      const Audt = await apiKoneksi(`/anggaran/kegiatan/${f}`);
-      if (Audt.result == "success") {
-        this.$emit("judul", "Kegiatan");
-        const rsp = Audt;
-        this.data = rsp.data.reverse();
-        notifikasi(Audt.result, Audt.title);
-      } else {
-        console.log(Audt);
-      }
+      this.adduraian = "";
+      this.addkoderekening = "";
+      this.modalMode = "add";
+      this.dataFocus = null;
+      this.loadingbtn = false;
     },
     editDialog(val, rek, uraian) {
       this.dataFocus = val;
@@ -68,81 +54,86 @@ export default {
     },
     async simpanUrusan() {
       this.loadingbtn = true;
-      const efs = await apiKoneksi(
-        "/anggaran/addKegiatan",
-        {
-          body: {
-            id_program: this.getF(1),
-            kode_rek: this.addkoderekening,
-            uraian: this.adduraian,
-          },
+      $fetch("/api/struktur/add?chain=anggaran-addKegiatan", {
+        method: "post",
+        body: {
+          id_program: this.getF(1),
+          kode_rek: this.addkoderekening,
+          uraian: this.adduraian,
         },
-        "POST"
-      );
-      if (efs.result == "success") {
-        const rsp = efs;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(efs);
-      }
+      }).then((svSt) => {
+        if (svSt.result == "success") {
+          const rsp = svSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(svSt);
+        }
+      });
     },
     async updateUrusan() {
       this.loadingbtn = true;
-      const efu = await apiKoneksi(
-        `/anggaran/updateKegiatan/${this.dataFocus}`,
+      $fetch(
+        `/api/struktur/update?chain=anggaran-updateKegiatan&id=${this.dataFocus}`,
         {
+          method: "PUT",
           body: {
             id_program: this.getF(1),
             kode_rek: this.addkoderekening,
             uraian: this.adduraian,
           },
-        },
-        "PUT"
-      );
-      if (efu.result == "success") {
-        const rsp = efu;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(efu);
-      }
+        }
+      ).then((upSt) => {
+        if (upSt.result == "success") {
+          const rsp = upSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(upSt);
+        }
+      });
     },
     async hapusUrusan() {
       this.loadingbtn = true;
-      const efh = await apiKoneksi(
-        `/anggaran/deleteKegiatan/${this.dataFocus}`,
-        {},
-        "PUT"
-      );
-      if (efh.result == "success") {
-        const rsp = efh;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(efh);
-      }
+      $fetch(
+        `/api/struktur/delete?chain=anggaran-deleteKegiatan&id=${this.dataFocus}`,
+        {
+          method: "PUT",
+        }
+      ).then((delSt) => {
+        if (delSt.result == "success") {
+          const rsp = delSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(delSt);
+        }
+      });
     },
     nextPage(pg, val) {
       const route = useRoute();
       const uid = idunq();
-      storeData("set", { key: uid, val: val });
-      navigateTo({
-        path: `${route.path}/${pg}`,
-        query: {
-          k: uid,
+      const cks = useCookie(uid);
+      cks.value = val;
+      navigateTo(
+        {
+          path: `${route.path}/${pg}`,
+          query: {
+            k: uid,
+          },
         },
-      });
+        { replace: true }
+      );
     },
     getF(id) {
       return this.filter[id];
     },
   },
   head: {
-    title: "Program",
+    title: "Kegiatan",
   },
 };
 definePageMeta({
@@ -197,7 +188,10 @@ definePageMeta({
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="dt in data" v-if="data && data.length > 0">
+                  <tr
+                    v-for="dt in data.data.slice().reverse()"
+                    v-if="data.data && data.data.length > 0"
+                  >
                     <td class="fit">{{ dt.kode_rek }}</td>
                     <td>{{ dt.uraian }}</td>
                     <td class="flex gap-2 justify-center">
@@ -227,9 +221,20 @@ definePageMeta({
                       </button>
                     </td>
                   </tr>
+                  <tr v-else-if="pending">
+                    <td class="lead py-5 text-muted text-center" colspan="3">
+                      <div
+                        class="spinner-border text-secondary m-1 align-middle spinner-border-sm"
+                        role="status"
+                      >
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                      Loading...
+                    </td>
+                  </tr>
                   <tr v-else>
                     <td class="lead py-5 text-muted text-center" colspan="3">
-                      Tidak ada Data
+                      Tidak ada data
                     </td>
                   </tr>
                 </tbody>

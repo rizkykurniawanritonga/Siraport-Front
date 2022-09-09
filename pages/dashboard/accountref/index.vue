@@ -2,6 +2,13 @@
 import _ from "lodash";
 import { useTimeAgo } from "@vueuse/core";
 export default {
+  async setup() {
+    const tahuns = await getTahun();
+    const { data: data, refresh: getData } = await useFetch(
+      "/api/akun/readAkun"
+    );
+    return { data, getData };
+  },
   data() {
     return {
       akun: {},
@@ -9,7 +16,6 @@ export default {
       showModaldelete: false,
       modalMode: "add",
       loadingbtn: false,
-      data: null,
       dataFocus: null,
       hdrtbl: [
         "No",
@@ -31,17 +37,8 @@ export default {
       this.dataFocus = null;
       this.loadingbtn = false;
     },
-    async getData() {
-      const Audt = await apiKoneksi("/akun");
-      if (Audt.result == "success") {
-        const rsp = Audt;
-        this.data = rsp.data.reverse();
-      } else {
-        console.log(Audt);
-      }
-    },
-    async editDialog(val) {
-      const usrGt = _.find(this.data, ["id", val]);
+    editDialog(val) {
+      const usrGt = _.find(this.data.data, ["id", val]);
       this.dataFocus = val;
       this.akun = {
         no_rekening: usrGt.no_rekening,
@@ -53,66 +50,61 @@ export default {
     },
     async simpanAkun() {
       this.loadingbtn = true;
-      const efs = await apiKoneksi(
-        "/akun/addAkun",
-        {
-          body: {
-            no_rekening: this.akun.no_rekening,
-            nama_rekening: this.akun.nama_rekening,
-            tahun: await getTahun(),
-            status: this.akun.status,
-          },
+      $fetch("/api/akun/addAkun", {
+        method: "post",
+        body: {
+          no_rekening: this.akun.no_rekening,
+          nama_rekening: this.akun.nama_rekening,
+          tahun: await getTahun(),
+          status: this.akun.status,
         },
-        "POST"
-      );
-      if (efs.result == "success") {
-        const rsp = efs;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(efs);
-      }
+      }).then((svSt) => {
+        if (svSt.result == "success") {
+          const rsp = svSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(svSt);
+        }
+      });
     },
     async updateUser() {
       this.loadingbtn = true;
-      const efu = await apiKoneksi(
-        `/akun/updateAkun/${this.dataFocus}`,
-        {
-          body: {
-            no_rekening: this.akun.no_rekening,
-            nama_rekening: this.akun.nama_rekening,
-            tahun: await getTahun(),
-            status: this.akun.status,
-          },
+      $fetch(`/api/akun/updateAkun?id=${this.dataFocus}`, {
+        method: "PUT",
+        body: {
+          no_rekening: this.akun.no_rekening,
+          nama_rekening: this.akun.nama_rekening,
+          tahun: await getTahun(),
+          status: this.akun.status,
         },
-        "PUT"
-      );
-      if (efu.result == "success") {
-        const rsp = efu;
-        this.resetfield();
-        this.showModal = false;
-        notifikasi(rsp.result, rsp.title);
-      } else {
-        console.log(efu);
-      }
+      }).then((upSt) => {
+        if (upSt.result == "success") {
+          const rsp = upSt;
+          this.resetfield();
+          this.showModal = false;
+          notifikasi(rsp.result, rsp.title);
+        } else {
+          console.log(upSt);
+        }
+      });
     },
     async hapusUser() {
       this.loadingbtn = true;
-      const efh = await apiKoneksi(
-        `/akun/deleteAkun/${this.dataFocus}`,
-        {},
-        "PUT"
-      );
-      const rsp = efh;
-      if (efh.result == "success") {
-        this.resetfield();
-        this.showModaldelete = false;
-      } else {
-        this.loadingbtn = false;
-        console.log(efh);
-      }
-      notifikasi(rsp.result, rsp.title);
+      $fetch(`/api/akun/deleteAkun?id=${this.dataFocus}`, {
+        method: "PUT",
+      }).then((delSt) => {
+        const rsp = delSt;
+        if (delSt.result == "success") {
+          this.resetfield();
+          this.showModaldelete = false;
+        } else {
+          this.loadingbtn = false;
+          console.log(delSt);
+        }
+        notifikasi(rsp.result, rsp.title);
+      });
     },
   },
   watch: {
@@ -123,7 +115,6 @@ export default {
     },
   },
   mounted() {
-    this.getData();
     this.$emit("judul", "Akun Rekening");
   },
   head: {
@@ -182,7 +173,7 @@ definePageMeta({
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(dtu, i) in data">
+                <tr v-for="(dtu, i) in data.data.slice().reverse()">
                   <td class="align-middle">{{ i + 1 }}.</td>
                   <td class="align-middle">
                     {{ dtu.no_rekening }}

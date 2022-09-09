@@ -1,6 +1,6 @@
 <template>
   <div
-    class="offcanvas md:!w-1/4 !border-l-0 shadow-lg !z-50"
+    class="offcanvas 2xl:!w-1/4 !border-l-0 shadow-lg !z-50"
     :class="[clsadd, `offcanvas-${pos}`]"
     data-bs-scroll="true"
     tabindex="-1"
@@ -9,7 +9,10 @@
     ref="sidepanel"
   >
     <div class="offcanvas-header bg-success border-b border-green-500">
-      <h5 class="offcanvas-title text-white" id="offcanvasWithBothOptionsLabel">
+      <h5
+        class="offcanvas-title 2xl:!text-lg !text-base text-white"
+        id="offcanvasWithBothOptionsLabel"
+      >
         <slot name="title" />
       </h5>
       <button

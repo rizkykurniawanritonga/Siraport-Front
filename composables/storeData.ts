@@ -5,7 +5,7 @@ async function storeData(mode, sts = null) {
   // setItem, getItem, removeItem, clear
   // sts = key & val
   // 1. sts = {key: 'abc'}
-  // 2. sts = {key: 'abc', val: 'def'}
+  // 2. sts = {key: 'abc', val: 'def'}w
   try {
     localForage.config({
       name: "Siraport-Apps",

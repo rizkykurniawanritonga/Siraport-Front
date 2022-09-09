@@ -1,8 +1,7 @@
 import cogoToast from "cogo-toast";
 import { _ } from "lodash";
 import { v4 as uuidv4 } from "uuid";
-import { useDocumentVisibility } from "@vueuse/core";
-import { useWebNotification } from "@vueuse/core";
+import { useDocumentVisibility, useWebNotification } from "@vueuse/core";
 
 function formatPrice(value) {
   let val = (value / 1).toFixed(2).replace(".", ",");
@@ -56,6 +55,7 @@ function focusBack() {
 
 export {
   focusBack,
+  formatTanggal,
   formatPrice,
   idunq,
   notifikasi,
