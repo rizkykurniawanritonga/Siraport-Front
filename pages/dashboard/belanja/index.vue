@@ -42,9 +42,12 @@ export default {
       const uid = idunq();
       const cks = useCookie(uid);
       cks.value = val;
-      navigateTo({
-        path: `${route.path}/detail-${uid}`,
-      });
+      return navigateTo(
+        {
+          path: `${route.path}/detail-${uid}`,
+        },
+        { replace: true, redirectCode: 301 }
+      );
     },
     spasiin(txt) {
       return _.repeat("\u00A0\u00A0", txt.split(".").length - 1) + txt;

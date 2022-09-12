@@ -9,11 +9,23 @@ export default {
       { data: dataKelompok, refresh: getKelompok },
       { data: dataSatuan },
     ] = await Promise.all([
-      useFetch(`/api/fetch/read?chain=belanja-detailRincian&id=${filter}`),
-      useFetch("/api/akun/readAkun"),
-      useFetch(`/api/fetch/read?chain=belanja-getBelanja&id=${filter}`),
-      useFetch(`/api/fetch/read?chain=satuan-getSatuan`),
+      useLazyAsyncData("dataDapetin", () =>
+        $fetch(`/api/fetch/read?chain=belanja-detailRincian&id=${filter}`)
+      ),
+      useLazyAsyncData("bacaRekening", () => $fetch("/api/akun/readAkun")),
+      useLazyAsyncData("getBelanja", () =>
+        $fetch(`/api/fetch/read?chain=belanja-getBelanja&id=${filter}`)
+      ),
+      useLazyAsyncData("getSatuan", () =>
+        $fetch(`/api/fetch/read?chain=satuan-getSatuan`)
+      ),
     ]);
+    const refreshData = () => {
+      refreshNuxtData("dataDapetin");
+      refreshNuxtData("bacaRekening");
+      refreshNuxtData("getBelanja");
+      refreshNuxtData("getSatuan");
+    };
     return {
       detailBelanja,
       stateDetail,
@@ -23,7 +35,11 @@ export default {
       getKelompok,
       dataSatuan,
       filter,
+      refreshData,
     };
+  },
+  created() {
+    this.refreshData();
   },
   data() {
     return {
@@ -194,7 +210,13 @@ definePageMeta({
                   <th colspan="3" class="uppercase">Detil Sub Kegiatan</th>
                 </tr>
               </thead>
-              <tbody v-if="detailBelanja.data && detailBelanja.data.detail">
+              <tbody
+                v-if="
+                  !stateDetail &&
+                  detailBelanja.data &&
+                  detailBelanja.data.detail
+                "
+              >
                 <tr>
                   <th scope="row" width="180">Bidang</th>
                   <th scope="row" width="5">:</th>
