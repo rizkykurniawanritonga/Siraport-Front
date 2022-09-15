@@ -15,14 +15,14 @@ async function storeData(mode, sts = null) {
     });
     const dPrfx = "siraport-app";
     if (mode == "set") {
-      localForage.setItem(`${dPrfx}:${sts.key}`, sts.val);
+      localForage.setItem(`${dPrfx}:${sts.key}`, encryptAES(sts.val));
     } else if (mode == "get") {
       const dt = await localForage
         .getItem(`${dPrfx}:${sts.key}`)
-        .then(function (value) {
+        .then(function (v) {
           // This code runs once the value has been loaded
           // from the offline store.
-          return value;
+          if (v) return decryptAES(v);
         })
         .catch(function (err) {
           // This code runs if there were any errors
@@ -34,7 +34,13 @@ async function storeData(mode, sts = null) {
     } else if (mode == "destroy") {
       localForage.clear();
     } else if (mode == "flash") {
-      const dt = await localForage.getItem(`${dPrfx}:${sts.key}`);
+      const dt = await localForage
+        .getItem(`${dPrfx}:${sts.key}`)
+        .then(function (v) {
+          // This code runs once the value has been loaded
+          // from the offline store.
+          if (v) return decryptAES(v);
+        });
       localForage.removeItem(`${dPrfx}:${sts.key}`);
       return dt;
     }
@@ -50,6 +56,14 @@ async function getUser(key = null) {
   const dt = await storeData("get", { key: "users" });
   return key ? dt[key] : dt;
 }
+function updateUser(key, val) {
+  storeData("get", { key: "users" }).then((vl) => {
+    if (vl) {
+      vl[key] = val;
+      storeData("set", { key: "users", val: vl });
+    }
+  });
+}
 
 function setToken(vls) {
   storeData("set", { key: "loginToken", val: vls });
@@ -58,11 +72,22 @@ async function getToken() {
   return await storeData("get", { key: "loginToken" });
 }
 
-function setTahun(vls) {
-  storeData("set", { key: "pilihTahun", val: vls });
+function setTahun(v) {
+  storeData("set", { key: "pilihTahun", val: _.toString(v) });
 }
 async function getTahun() {
-  return await storeData("get", { key: "pilihTahun" });
+  return await storeData("get", { key: "pilihTahun" }).then((v) => {
+    if (v) return _.toNumber(v);
+  });
 }
 
-export { storeData, setUser, getUser, setToken, getToken, setTahun, getTahun };
+export {
+  storeData,
+  updateUser,
+  setUser,
+  getUser,
+  setToken,
+  getToken,
+  setTahun,
+  getTahun,
+};

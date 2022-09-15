@@ -5,7 +5,10 @@
       <div class="d-flex flex-column min-vh-100 px-3 pt-4">
         <div class="row justify-content-center my-auto">
           <div class="mb-4 pb-2">
-            <NuxtLink to="/" class="flex justify-center auth-logo">
+            <NuxtLink
+              to="/"
+              class="flex justify-center auth-logo animate__animated animate__faster animate__fadeInUp"
+            >
               <img
                 src="~/assets/images/logopemprovsu.png"
                 alt=""

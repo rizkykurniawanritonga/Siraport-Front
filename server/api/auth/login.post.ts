@@ -7,9 +7,11 @@ export default defineEventHandler(async (event) => {
     method: "post",
     body: body,
   }).then(async (dt) => {
-    await useStorage().setItem("redis:siraport-app:loginToken", {
-      token: dt.data.token,
-    });
+    if (dt.result == "success") {
+      await useStorage().setItem("redis:siraport-app:loginToken", {
+        token: dt.data.token,
+      });
+    }
     return dt;
   });
 });

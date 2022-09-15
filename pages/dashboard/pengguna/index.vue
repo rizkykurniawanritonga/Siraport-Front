@@ -2,6 +2,19 @@
 import _ from "lodash";
 import { useTimeAgo } from "@vueuse/core";
 export default {
+  async setup() {
+    const [{ data: data, refresh: getData, pending: stateData }] =
+      await Promise.all([
+        useLazyAsyncData("dataUsers", () =>
+          $fetch(`/api/fetch/read?chain=user-listUser`)
+        ),
+      ]);
+    return {
+      data,
+      stateData,
+      getData,
+    };
+  },
   data() {
     return {
       users: {},
@@ -9,29 +22,34 @@ export default {
       showModaldelete: false,
       modalMode: "add",
       loadingbtn: false,
-      data: null,
       dataFocus: null,
       hdrtbl: ["No", "Nama", "Status", "Dibuat", "Action"],
     };
+  },
+  computed: {
+    resultQuery() {
+      if (this.data.data) {
+        const dt = this.data.data.filter((item) => {
+          return this.headerSearch
+            .toLowerCase()
+            .split(" ")
+            .every((v) => item.nama.toLowerCase().includes(v));
+        });
+        return dt;
+      } else {
+        return this.data.data;
+      }
+    },
   },
   methods: {
     resetfield() {
       this.showModal = false;
       this.showModaldelete = false;
-      this.getData();
       this.users = {};
       this.modalMode = "add";
       this.dataFocus = null;
       this.loadingbtn = false;
-    },
-    async getData() {
-      const Audt = await apiKoneksi("/user/listUser");
-      if (Audt.result == "success") {
-        const rsp = Audt;
-        this.data = rsp.data.reverse();
-      } else {
-        console.log(Audt);
-      }
+      this.getData();
     },
     async editDialog(val) {
       const usrGt = _.find(this.data, ["id", val]);
@@ -109,12 +127,14 @@ export default {
       }
     },
   },
-  mounted() {
-    this.getData();
+  created() {
     this.$emit("judul", "Users");
   },
   head: {
     title: "Users",
+  },
+  props: {
+    headerSearch: String,
   },
 };
 definePageMeta({
@@ -136,7 +156,7 @@ definePageMeta({
               >
                 <button
                   type="button"
-                  class="btn btn-success"
+                  class="btn btn-soft-success"
                   @click="showModal = true"
                 >
                   Tambah
@@ -144,7 +164,7 @@ definePageMeta({
 
                 <Dropdown
                   outerClass="btn-group"
-                  btnclass="btn-secondary dropdown-toggle"
+                  btnclass="btn-soft-secondary dropdown-toggle"
                   dropclass="right-0 border"
                 >
                   <template #btntxt
@@ -164,23 +184,6 @@ definePageMeta({
         </div>
         <!-- end card header -->
         <div class="card-body">
-          <div class="col-md-5 d-flex flex-column px-5 py-3 mb-3">
-            <div class="row mb-4">
-              <label
-                for="horizontal-firstname-input"
-                class="col-sm-3 col-form-label"
-                >Kata Kunci</label
-              >
-              <div class="col-sm-9">
-                <input
-                  type="search"
-                  class="form-control"
-                  placeholder="Kata kunci pencarian..."
-                  id="horizontal-firstname-input"
-                />
-              </div>
-            </div>
-          </div>
           <div class="table-responsive rounded border border-gray-300">
             <table
               class="table table-bordered border-gray-300 m-0"
@@ -191,8 +194,8 @@ definePageMeta({
                   <th class="font-bold" v-for="dt in hdrtbl">{{ dt }}</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="(dtu, i) in data">
+              <tbody v-if="!stateData">
+                <tr v-for="(dtu, i) in resultQuery">
                   <td class="align-middle">{{ i + 1 }}.</td>
                   <td class="align-middle">
                     {{ dtu.nama }} <b>@{{ dtu.username }}</b> ({{
@@ -247,6 +250,26 @@ definePageMeta({
                   </td>
                 </tr>
               </tbody>
+              <tbody v-else-if="stateData">
+                <tr>
+                  <td class="lead py-5 text-muted text-center" colspan="5">
+                    <div
+                      class="spinner-border text-secondary m-1 align-middle"
+                      role="status"
+                    >
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                    Loading...
+                  </td>
+                </tr>
+              </tbody>
+              <tbody v-else>
+                <tr>
+                  <td class="lead py-5 text-muted text-center" colspan="5">
+                    Data Gagal di load
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -262,7 +285,7 @@ definePageMeta({
           </h3>
           <form>
             <div class="mb-4">
-              <label for="formrow-kode-input" class="form-label"
+              <label for="formrow-username-input" class="form-label"
                 >Username</label
               >
               <input
@@ -270,7 +293,7 @@ definePageMeta({
                 required
                 class="form-control"
                 v-model="users.username"
-                id="formrow-kode-input"
+                id="formrow-username-input"
               />
             </div>
             <div class="mb-4">
@@ -287,7 +310,7 @@ definePageMeta({
             </div>
             <div class="row mb-2">
               <div class="col-md-12">
-                <label for="formrow-firstname-input" class="form-label"
+                <label for="formrow-pass-input" class="form-label"
                   >Password</label
                 >
                 <input
@@ -295,7 +318,7 @@ definePageMeta({
                   type="password"
                   class="form-control"
                   v-model="users.password"
-                  id="formrow-kode-input"
+                  id="formrow-pass-input"
                 />
               </div>
             </div>

@@ -1,5 +1,50 @@
+<script>
+export default {
+  data() {
+    return {
+      loadState: false,
+      login: {
+        username: "",
+        password: "",
+      },
+    };
+  },
+  methods: {
+    async userLogin() {
+      this.loadState = true;
+      notifikasi("loading", "Memproses Autentikasi...");
+      const dt = await loginAplikasiAuth(
+        this.login.username,
+        this.login.password
+      );
+      if (!dt) this.loadState = false;
+    },
+  },
+  head: {
+    title: "Login",
+  },
+  mounted() {
+    flashNotifikasi();
+  },
+};
+definePageMeta({
+  layout: "auth",
+  middleware: ["haslogin"],
+});
+</script>
 <template>
-  <div class="card col-md-5 mx-auto mt-4">
+  <div class="card col-md-5 mx-auto mt-4 overflow-hidden">
+    <div
+      class="loading-bar animate__faster animate__animated"
+      :class="loadState ? 'animate__fadeInDown' : 'animate__fadeOutUp'"
+    >
+      <div class="bar-container primary">
+        <div class="bar-item primary" />
+      </div>
+      <div class="bar-container aux">
+        <div class="bar-item aux" />
+      </div>
+    </div>
     <div class="card-body p-4">
       <div class="text-center mt-2">
         <h5>Welcome Back !</h5>
@@ -75,31 +120,3 @@
     </div>
   </div>
 </template>
-<script>
-export default {
-  data() {
-    return {
-      login: {
-        username: "",
-        password: "",
-      },
-    };
-  },
-  methods: {
-    async userLogin() {
-      notifikasi("loading", "Memproses Autentikasi...");
-      await loginAplikasiAuth(this.login.username, this.login.password, this);
-    },
-  },
-  head: {
-    title: "Login",
-  },
-  mounted() {
-    flashNotifikasi();
-  },
-};
-definePageMeta({
-  layout: "auth",
-  middleware: ["haslogin"],
-});
-</script>

@@ -25,9 +25,6 @@ export default defineNuxtConfig({
   css: ["~/assets/scss/app.scss"],
   modules: ["@nuxtjs/tailwindcss", "@vueuse/nuxt"],
   runtimeConfig: {
-    // The private keys which are only available within server-side
-    // apiSecret: "123",
-    // Keys within public, will be also exposed to the client-side
     public: {
       apiBase:
         process.env.NODE_ENV == "production"

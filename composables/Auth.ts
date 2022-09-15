@@ -1,13 +1,18 @@
-async function loginAplikasiAuth(user, pass, e) {
-  $fetch("/api/auth/login", {
+async function loginAplikasiAuth(user, pass) {
+  return $fetch("/api/auth/login", {
     method: "post",
     body: { username: user, password: pass },
   }).then(async (Audt) => {
-    setToken(Audt.data.token);
     if (Audt.result == "success" && Audt.data.token != "") {
+      setToken(Audt.data.token);
       $fetch("/api/auth/profil").then(async (Usdt) => {
         if (Usdt.result == "success") {
-          setUser(Usdt.data);
+          let objaddUsers = {
+            rememberPass: pass,
+          };
+          // obj variabile could be empty or not, it's the same
+          const userData = { ...Usdt.data, ...objaddUsers };
+          setUser(userData);
           notifikasi(Audt.result, Audt.title);
           navigateTo("/pilihtahun");
         } else {
@@ -16,12 +21,13 @@ async function loginAplikasiAuth(user, pass, e) {
       });
     } else {
       notifikasi(Audt.result, Audt.title);
+      return false;
     }
   });
 }
 
 function logoutAplikasi() {
-  navigateTo("/auth/logout", { replace: true });
+  return navigateTo({ path: "/auth/logout" }, { replace: true });
 }
 
 export { loginAplikasiAuth, logoutAplikasi };

@@ -1,11 +1,23 @@
 <template>
-  <p>logout...</p>
+  <div class="flex items-center justify-center h-screen">
+    <div class="text-gray-400 text-2xl flex align-middle gap-3 items-center">
+      <div
+        class="spinner-border text-secondary m-1 spinner-border-sm !border-2"
+        role="status"
+      >
+        <span class="sr-only">Loading...</span>
+      </div>
+      logout...
+    </div>
+  </div>
 </template>
 <script>
 export default {
   created() {
     storeData("destroy");
-    navigateTo("/login", { replace: true });
+    setTimeout(() => {
+      navigateTo("/login", { replace: true });
+    }, 1000);
   },
 };
 </script>

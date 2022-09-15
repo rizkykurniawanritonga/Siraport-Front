@@ -2,6 +2,24 @@ import cogoToast from "cogo-toast";
 import { _ } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import { useDocumentVisibility, useWebNotification } from "@vueuse/core";
+import CryptoJS from "crypto-js";
+
+//encryption
+function encryptAES(data, keyStr = useAppConfig().apiSecret) {
+  const dt = CryptoJS.AES.encrypt(
+    _.isObject(data) ? JSON.stringify(data) : data,
+    keyStr
+  ).toString();
+  return (_.isObject(data) ? "json|" : "") + dt;
+}
+//Decrypt
+function decryptAES(data, keyStr = useAppConfig().apiSecret) {
+  const stjson = _.includes(data, "json|");
+  data = stjson ? _.replace(data, "json|", "") : data;
+  var bytes = CryptoJS.AES.decrypt(data, keyStr);
+  var decy = bytes.toString(CryptoJS.enc.Utf8);
+  return stjson ? JSON.parse(decy) : decy;
+}
 
 function formatPrice(value) {
   let val = (value / 1).toFixed(2).replace(".", ",");
@@ -54,6 +72,8 @@ function focusBack() {
 }
 
 export {
+  encryptAES,
+  decryptAES,
   focusBack,
   formatTanggal,
   formatPrice,

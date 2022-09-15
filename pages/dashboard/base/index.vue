@@ -131,6 +131,9 @@ export default {
   head: {
     title: "Urusan",
   },
+  props: {
+    headerSearch: String,
+  },
 };
 definePageMeta({
   layout: "dash",
@@ -142,7 +145,9 @@ definePageMeta({
       <div class="col-lg-12">
         <div class="card">
           <div class="card-header align-items-center d-flex">
-            <h4 class="card-title mb-0 flex-grow-1">Urusan</h4>
+            <h4 class="card-title mb-0 flex-grow-1">
+              Urusan {{ headerSearch }}
+            </h4>
             <div class="flex-shrink-0">
               <div class="d-flex flex-wrap gap-2 mb-0 my-n1">
                 <Dropdown

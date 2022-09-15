@@ -3,13 +3,17 @@
     <DashHeader
       :sidebar="stateSdbr"
       :judul="judulatas"
+      @headerSearch="(i) => (headerSearch = i)"
       @togglesidebar="toggleSidebar()"
     />
     <DashSidebar :sidebar="stateSdbr" @togglesidebar="toggleSidebar()" />
     <div class="main-content">
       <div class="page-content">
         <div class="container-fluid">
-          <NuxtChild @judul="(i) => (judulatas = i)" />
+          <NuxtChild
+            @judul="(i) => (judulatas = i)"
+            :headerSearch="headerSearch"
+          />
         </div>
       </div>
       <DashFooter />
@@ -20,23 +24,53 @@
 definePageMeta({
   middleware: ["autentikasi"],
 });
-import { useWindowSize, useToggle } from "@vueuse/core";
+import { useWindowSize, useToggle, useIdle } from "@vueuse/core";
 export default {
   async setup() {
+    const confApp = useAppConfig();
+    const curpath = useRoute().fullPath;
     const [{ width: widthlyr }, [stateSdbr, toggleState]] = await Promise.all([
       useWindowSize(),
       useToggle(),
     ]);
-    return { widthlyr, stateSdbr, toggleState };
+    const now = useTimestamp();
+    const { idle, lastActive } = useIdle(confApp.idleTime);
+    return {
+      widthlyr,
+      stateSdbr,
+      toggleState,
+      idle,
+      lastActive,
+      now,
+      curpath,
+    };
   },
   data() {
     return {
       judulatas: "",
+      headerSearch: "",
       sdbrSize: "sm",
       fcsbck: focusBack(),
+      idleState: false,
     };
   },
+  computed: {
+    waktuidle() {
+      return Math.floor((this.now - this.lastActive) / 1000);
+    },
+  },
   watch: {
+    idle(vl) {
+      if (vl) {
+        storeData("set", { key: "lockLoginBack", val: this.curpath });
+        return navigateTo(
+          {
+            path: "/lockscreen",
+          },
+          { replace: true }
+        );
+      }
+    },
     fcsbck(current, previous) {
       if (current === "visible" && previous === "hidden") {
         notifikasi("info", "Yuk semangat kerjanya! 😊");

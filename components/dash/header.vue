@@ -2,14 +2,24 @@
 import { useWindowScroll } from "@vueuse/core";
 export default {
   async setup() {
-    const { x, y: yScreen } = useWindowScroll();
+    const { y: yScreen } = useWindowScroll();
     const tahunKerja = await getTahun();
     const user = await getUser();
     return { yScreen, user, tahunKerja };
   },
+  data() {
+    return {
+      searchin: "",
+    };
+  },
   props: {
     sidebar: Boolean,
     judul: String,
+  },
+  watch: {
+    searchin(vl) {
+      this.$emit("headerSearch", vl);
+    },
   },
   methods: {
     pickTahunKerja() {
@@ -29,12 +39,14 @@ export default {
     class="isvertical-topbar !bg-slate-50/50 backdrop-blur backdrop-grayscale !z-20"
     :class="yScreen > 2 && 'border-b border-gray-300 shadow-lg'"
   >
-    <div class="navbar-header">
+    <div
+      class="navbar-header animate__animated animate__faster animate__fadeInDown"
+    >
       <div class="flex content-center">
         <!-- LOGO -->
-        <div class="navbar-brand-box">
-          <NuxtLink to="/dashboard" class="logo">
-            <span class="logo-sm mt-4 mb-2.5 flex gap-3 items-center">
+        <div class="navbar-brand-box d-lg-none d-flex align-items-center">
+          <NuxtLink to="/dashboard" class="logo flex">
+            <span class="logo-sm !mb-0 flex gap-3 items-center">
               <img
                 src="~/assets/images/logopemprovsu.png"
                 alt=""
@@ -54,7 +66,7 @@ export default {
 
         <button
           type="button"
-          class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn bukasd"
+          class="btn btn-sm px-3 font-size-24 header-item waves-effect vertical-menu-btn"
           @click.prevent="toggleSidebar"
         >
           <i class="bx bx-menu align-middle"></i>
@@ -69,7 +81,19 @@ export default {
         </div>
         <!-- end page title -->
       </div>
-
+      <div class="input-group mx-auto w-25">
+        <div class="input-group-text !bg-white !rounded-l-full !pl-5 !pr-0">
+          <i class="bx bx-search text-xl"></i>
+        </div>
+        <input
+          type="search"
+          name="katakuncipencarian"
+          class="form-control !border-l-0 !rounded-r-full"
+          placeholder="Kata kunci..."
+          autocomplete="off"
+          v-model="searchin"
+        />
+      </div>
       <div class="d-flex items-center">
         <button
           type="button"
@@ -82,29 +106,6 @@ export default {
           <i class="bx bx-calendar-event icon-sm align-middle"></i>
           <span class="align-middle ml-2 font-semibold">{{ tahunKerja }}</span>
         </button>
-        <Dropdown
-          btnclass="header-item noti-icon"
-          dropclass="dropdown-menu-lg end-0 p-0"
-        >
-          <template #btntxt>
-            <i class="bx bx-search icon-sm align-middle"></i>
-          </template>
-          <template #dropcontent>
-            <form class="p-2">
-              <div class="search-box">
-                <div class="position-relative">
-                  <input
-                    type="text"
-                    class="form-control rounded bg-light border-0"
-                    placeholder="Search..."
-                  />
-                  <i class="bx bx-search search-icon"></i>
-                </div>
-              </div>
-            </form>
-          </template>
-        </Dropdown>
-
         <Dropdown
           btnclass="header-item noti-icon"
           dropclass="dropdown-menu-xl end-0 p-0"

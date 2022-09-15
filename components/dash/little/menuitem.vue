@@ -9,7 +9,8 @@ export default {
   <NuxtLink
     v-if="!menu.sub"
     :to="menu.link"
-    :class="[useRoute().path == menu.link && 'active', menu.sub && 'has-arrow']"
+    :class="[menu.sub && 'has-arrow']"
+    activeClass="active"
     class="waves-effect"
   >
     <i v-if="menu.icon" :class="menu.icon"></i>

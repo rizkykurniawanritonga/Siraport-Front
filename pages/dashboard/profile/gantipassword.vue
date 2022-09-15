@@ -1,35 +1,45 @@
 <script>
 export default {
+  async setup() {
+    const user = await getUser();
+    return { user };
+  },
   data() {
     return {
+      oldpass: "",
       newpass: "",
       repeatnewpass: "",
     };
   },
   methods: {
     async updatePassword() {
-      if (this.newpass == this.repeatnewpass) {
-        this.loadingbtn = true;
-        const efs = await apiKoneksi(
-          `/user/updateUser/${getUser("id")}`,
-          {
+      if (this.user.rememberPass == this.oldpass) {
+        if (this.newpass == this.repeatnewpass) {
+          this.loadingbtn = true;
+          $fetch(`/api/fetch/update?chain=user-updateUser&id=${this.user.id}`, {
+            method: "PUT",
             body: {
-              nama: getUser("nama"),
-              username: getUser("username"),
+              nama: this.user.nama,
+              username: this.user.username,
               password: this.newpass,
             },
-          },
-          "PUT"
-        );
-        if (efs.result == "success") {
-          const rsp = efs;
-          notifikasi(rsp.result, rsp.title);
-          navigateTo("/dashboard/profile");
+          }).then((upSt) => {
+            if (upSt.result == "success") {
+              updateUser("rememberPass", this.newpass);
+              notifikasi(upSt.result, upSt.title);
+              return navigateTo(
+                { path: "/dashboard/profile" },
+                { replace: true }
+              );
+            } else {
+              console.log(upSt);
+            }
+          });
         } else {
-          console.log(Audt);
+          notifikasi("error", "Password baru dan Ulangi Password tidak sama!");
         }
       } else {
-        notifikasi("error", "Password baru dan Ulangi Password tidak sama!");
+        notifikasi("error", "Password saat ini salah!");
       }
     },
   },
@@ -46,7 +56,7 @@ definePageMeta({
 });
 </script>
 <template>
-  <div class="card col-xl-4 mx-auto">
+  <div class="card col-xl-4">
     <div class="card-header bg-transparent border-bottom text-uppercase">
       Ganti Password
     </div>
@@ -56,24 +66,37 @@ definePageMeta({
         keamanan akun.
       </p>
       <div class="mb-4">
-        <label class="form-label" for="new-pass-input">Password Baru</label>
+        <label class="form-label" for="old-pass-input">Password saat ini</label>
+        <input class="form-control sr-only autocompletefixer" type="password" />
         <input
           class="form-control"
           type="password"
-          id="new-pass-input"
-          v-model="newpass"
+          id="old-pass-input"
+          autocomplete="off"
+          v-model="oldpass"
         />
       </div>
-      <div class="mb-2">
-        <label class="form-label" for="repeat-pass-input"
-          >Ulang Password Baru</label
-        >
-        <input
-          class="form-control"
-          type="password"
-          id="repeat-pass-input"
-          v-model="repeatnewpass"
-        />
+      <div class="row">
+        <div class="mb-4 col-md-6">
+          <label class="form-label" for="new-pass-input">Password Baru</label>
+          <input
+            class="form-control"
+            type="password"
+            id="new-pass-input"
+            v-model="newpass"
+          />
+        </div>
+        <div class="mb-2 col-md-6">
+          <label class="form-label" for="repeat-pass-input"
+            >Ulang Password Baru</label
+          >
+          <input
+            class="form-control"
+            type="password"
+            id="repeat-pass-input"
+            v-model="repeatnewpass"
+          />
+        </div>
       </div>
     </div>
     <div class="card-footer bg-transparent border-top text-right">
