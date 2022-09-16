@@ -33,7 +33,9 @@ definePageMeta({
 });
 </script>
 <template>
-  <div class="card col-md-5 mx-auto mt-4 overflow-hidden">
+  <div
+    class="card col-md-5 mx-auto mt-4 overflow-hidden !shadow-xl animate__faster animate__animated animate__fadeIn"
+  >
     <div
       class="loading-bar animate__faster animate__animated"
       :class="loadState ? 'animate__fadeInDown' : 'animate__fadeOutUp'"

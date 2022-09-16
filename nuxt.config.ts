@@ -15,6 +15,14 @@ export default defineNuxtConfig({
       { name: "format-detection", content: "telephone=no" },
     ],
     link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+    script: [
+      // Insert your Google Tag Manager Script here
+      {
+        src: "https://www.googletagmanager.com/gtag/js?id=G-0G55SFKHQJ",
+        async: true,
+        type: "text/partytown",
+      },
+    ],
     noscript: [
       {
         children:
@@ -23,7 +31,21 @@ export default defineNuxtConfig({
     ],
   },
   css: ["~/assets/scss/app.scss"],
-  modules: ["@nuxtjs/tailwindcss", "@vueuse/nuxt"],
+  googleFonts: {
+    families: {
+      Montserrat: [400, 500, 600],
+      "IBM+Plex+Sans": [400, 500, 600],
+    },
+  },
+  modules: [
+    "@nuxtjs/google-fonts",
+    "@nuxtjs/tailwindcss",
+    "@vueuse/nuxt",
+    "@nuxtjs/partytown",
+  ],
+  partytown: {
+    forward: ["dataLayer.push"],
+  },
   runtimeConfig: {
     public: {
       apiBase:

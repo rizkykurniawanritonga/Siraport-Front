@@ -44,7 +44,7 @@ export default {
     >
       <div class="flex content-center">
         <!-- LOGO -->
-        <div class="navbar-brand-box d-lg-none d-flex align-items-center">
+        <div class="navbar-brand-box px-0 d-lg-none d-flex align-items-center">
           <NuxtLink to="/dashboard" class="logo flex">
             <span class="logo-sm !mb-0 flex gap-3 items-center">
               <img
@@ -81,7 +81,9 @@ export default {
         </div>
         <!-- end page title -->
       </div>
-      <div class="input-group mx-auto w-25">
+      <div
+        class="input-group flex-1 md:flex-none md:mx-auto md:!w-1/3 lg:!w-1/4"
+      >
         <div class="input-group-text !bg-white !rounded-l-full !pl-5 !pr-0">
           <i class="bx bx-search text-xl"></i>
         </div>
@@ -97,14 +99,16 @@ export default {
       <div class="d-flex items-center">
         <button
           type="button"
-          class="btn !bg-slate-200/80 hover:!bg-slate-300/80 px-4 mr-4 !rounded-full h-fit noti-icon"
+          class="btn lg:!bg-slate-200/80 lg:hover:!bg-slate-300/80 lg:!px-4 lg:mr-4 !rounded-full h-fit noti-icon"
           data-bs-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
           @click="pickTahunKerja"
         >
           <i class="bx bx-calendar-event icon-sm align-middle"></i>
-          <span class="align-middle ml-2 font-semibold">{{ tahunKerja }}</span>
+          <span class="align-middle ml-2 lg:inline-block hidden">{{
+            tahunKerja
+          }}</span>
         </button>
         <Dropdown
           btnclass="header-item noti-icon"
@@ -194,10 +198,10 @@ export default {
             <img
               class="rounded-circle header-profile-user"
               src="~/assets/images/users/avatar-3.jpg"
-              alt="Header Avatar"
+              :alt="user && user.nama"
             />
             <span
-              class="d-none d-xl-inline-block ms-2 fw-medium font-size-15"
+              class="d-none d-xl-inline-block ms-2 font-semibold font-size-15"
               >{{ user && user.nama }}</span
             >
           </template>

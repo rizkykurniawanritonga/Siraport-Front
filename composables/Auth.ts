@@ -1,3 +1,4 @@
+import { _ } from "lodash";
 async function loginAplikasiAuth(user, pass) {
   return $fetch("/api/auth/login", {
     method: "post",
@@ -9,6 +10,7 @@ async function loginAplikasiAuth(user, pass) {
         if (Usdt.result == "success") {
           let objaddUsers = {
             rememberPass: pass,
+            avatar: `~/assets/images/users/avatar-${_.random(1, 8)}.jpg`,
           };
           // obj variabile could be empty or not, it's the same
           const userData = { ...Usdt.data, ...objaddUsers };

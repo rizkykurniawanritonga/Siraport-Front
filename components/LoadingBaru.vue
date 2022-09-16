@@ -20,7 +20,7 @@ export default {
     const nuxtApp = useNuxtApp();
     nuxtApp.hook("page:start", NProgress.start);
     nuxtApp.hook("page:finish", NProgress.done);
-    onBeforeUnmount(() => NProgress.start);
+    onBeforeUnmount(() => NProgress.remove);
   },
 };
 </script>

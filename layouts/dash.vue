@@ -12,6 +12,7 @@
         <div class="container-fluid">
           <NuxtChild
             @judul="(i) => (judulatas = i)"
+            class="animate__animated animate__faster animate__fadeIn"
             :headerSearch="headerSearch"
           />
         </div>

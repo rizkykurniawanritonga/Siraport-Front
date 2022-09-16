@@ -1,6 +1,8 @@
 <template>
   <div class="authentication-bg min-vh-100">
-    <div class="bg-overlay bg-light"></div>
+    <div
+      class="bg-overlay bg-light animate__animated animate__fadeOut animate__slow animate__delay-1s"
+    ></div>
     <div class="container">
       <div class="d-flex flex-column min-vh-100 px-3 pt-4">
         <div class="row justify-content-center my-auto">

@@ -1,6 +1,8 @@
 <template>
   <!-- ========== Left Sidebar Start =========== -->
-  <div class="vertical-menu !z-30">
+  <div
+    class="vertical-menu !z-30 animate__animated animate__fadeInLeft animate__faster"
+  >
     <!-- LOGO -->
     <div class="navbar-brand-box">
       <NuxtLink to="/dashboard" class="logo">
@@ -9,7 +11,7 @@
         </span>
         <span class="logo-lg my-3 flex gap-3 items-center">
           <img src="~/assets/images/logopemprovsu.png" alt="" class="w-10" />
-          <span class="text-xl font-extrabold text-black">SIRAPORT</span>
+          <span class="text-xl font-semibold text-black">SIRAPORT</span>
         </span>
       </NuxtLink>
     </div>
@@ -34,7 +36,11 @@
               'mm-active': checkTeks(menu.link, useRoute().path),
             }"
           >
-            <DashLittleMenuitem v-if="!menu.batas" :menu="menu" />
+            <DashLittleMenuitem
+              v-if="!menu.batas"
+              :menu="menu"
+              @click="!menu.batas && !menu.sub && toggleSidebar"
+            />
             <ul
               v-if="!menu.batas && menu.sub"
               class="sub-menu mm-collapse"
@@ -51,10 +57,10 @@
                   aria-expanded="false"
                 >
                   <li
-                    v-for="sub in sub.sub"
-                    :class="[sub.disabled ? 'disabled' : '']"
+                    v-for="sub1 in sub.sub"
+                    :class="[sub1.disabled ? 'disabled' : '']"
                   >
-                    <DashLittleMenuitem :menu="sub" />
+                    <DashLittleMenuitem :menu="sub1" />
                   </li>
                 </ul>
               </li>
